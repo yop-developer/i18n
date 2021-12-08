@@ -1,6 +1,16 @@
 /*
- * Copyright (c) 2018. All rights reserved to Maxime HAMM.
- *   This file is part of Jspresso Developer Studio
+ * I18N
+ * Copyright (C) 2021  Maxime HAMM - NIMBLY CONSULTING - maxime.hamm.pro@gmail.com
+ *
+ * This document is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This work is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 package org.jspresso.i18n.view;
 
@@ -107,9 +117,14 @@ public class TranslationSnapView extends AbstractSnapView {
         deleteOrCreateKeyButton.addActionListener(e -> {
             if (DELETE_KEY.equals(deleteOrCreateKeyButton.getText())) {
                 String key = model.getSelectedKey();
-                model.deleteKey();
-
-                initTranslationKey(key, true, model.getOriginFile(), model.getModule());
+                try {
+                    SlowOperations.allowSlowOperations((ThrowableRunnable<Throwable>) () -> {
+                        model.deleteKey();
+                        initTranslationKey(key, true, model.getOriginFile(), model.getModule());
+                    });
+                } catch (Throwable ee) {
+                    LOG.error("Translation init error", ee);
+                }
             }
             else {
                 model.createKey();
@@ -120,7 +135,13 @@ public class TranslationSnapView extends AbstractSnapView {
         deleteOrCreateKeyButton.setFont(deleteOrCreateKeyButton.getFont().deriveFont(deleteOrCreateKeyButton.getFont().getStyle(), deleteOrCreateKeyButton.getFont().getSize() -2));
 
         duplicateButton = new JButton();
-        duplicateButton.addActionListener(e -> duplicateKey());
+        duplicateButton.addActionListener(e -> {
+            try {
+                SlowOperations.allowSlowOperations((ThrowableRunnable<Throwable>) this::duplicateKey);
+            } catch (Throwable ee) {
+                LOG.error("Translation init error", ee);
+            }
+        });
         duplicateButton.setIcon(SJSIcons.DUPLICATE);
         duplicateButton.setFont(duplicateButton.getFont().deriveFont(duplicateButton.getFont().getStyle(), duplicateButton.getFont().getSize() -2));
         duplicateButton.setText("Duplicate key");
@@ -174,7 +195,13 @@ public class TranslationSnapView extends AbstractSnapView {
                 if (text != null) {
                     String key = StringUtil.removeQuotes(text);
 
-                    initTranslationKey(key, false, FileUtil.getFile(editor), module);
+                    try {
+                        SlowOperations.allowSlowOperations((ThrowableRunnable<Throwable>) () ->
+                                initTranslationKey(key, false, FileUtil.getFile(editor), module));
+                    } catch (Throwable ee) {
+                        LOG.error("Translation init error", ee);
+                    }
+
                     return;
                 }
             }
@@ -586,7 +613,14 @@ public class TranslationSnapView extends AbstractSnapView {
             return;
 
         PsiDocumentManager.getInstance(project).performWhenAllCommitted(
-                () -> loadTranslation(model.getSelectedKey(), null)
+                () -> {
+                    try {
+                        SlowOperations.allowSlowOperations((ThrowableRunnable<Throwable>) () ->
+                                loadTranslation(model.getSelectedKey(), null));
+                    } catch (Throwable ee) {
+                        LOG.error("Translation init error", ee);
+                    }
+                }
         );
     }
 
@@ -777,8 +811,16 @@ public class TranslationSnapView extends AbstractSnapView {
                     }
 
                     LOG.trace("initTranslation : key : " + key);
-                    if (key != null)
-                        initTranslationKey(key, false, FileUtil.getFile(editor), module);
+                    if (key != null) {
+                        try {
+                            String finalKey = key;
+                            Module finalModule = module;
+                            SlowOperations.allowSlowOperations((ThrowableRunnable<Throwable>) () ->
+                                    initTranslationKey(finalKey, false, FileUtil.getFile(editor), finalModule));
+                        } catch (Throwable ee) {
+                            LOG.error("Translation init error", ee);
+                        }
+                    }
                 });
     }
 
@@ -1176,8 +1218,14 @@ public class TranslationSnapView extends AbstractSnapView {
         @Override
         public void focusGained(FocusEvent e) {
             String language = getLanguage(index);
-            if (language!=null)
-                updateEditButton(language);
+            if (language!=null) {
+                try {
+                    SlowOperations.allowSlowOperations((ThrowableRunnable<Throwable>) () ->
+                            updateEditButton(language));
+                } catch (Throwable ee) {
+                    LOG.error("Translation init error", ee);
+                }
+            }
         }
 
         @Override
