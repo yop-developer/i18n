@@ -1,0 +1,42 @@
+<idea-plugin>
+    <id>org.jspresso.plugin.i18n</id>
+    <name>I18N Translation</name>
+    <vendor email="maxime.hamm@gmail.com"
+            url="https://www.linkedin.com/in/maxime-hamm/">Maxime HAMM</vendor>
+
+    <description><![CDATA[
+      <b>I18N - Fast translation</b><br/>
+       <ul>
+          <li>Select any literal to be translated and let the plugin find the existent properties files bundle containing this internationalization key.</li>
+          <li>If the key was found, consult and update all translations</li>
+          <li>Use <b>Google translate</b> to go faster !</li>
+          <li>If the key was not found, select the appropriete resource bundle and create the key </li>
+          <li>You can also quickly duplicate or delete an existant key</li>
+       </ul>
+      <i>@author Maxime HAMM</i>
+    ]]></description>
+
+    <change-notes><![CDATA[
+       <ul>
+          <li><b>1.2</b> IDEA 2020.3 compatibility</li>
+          <li><b>1.1</b> IDEA 2020.1 compatibility</li>
+          <li><b>1.0</b> Initial version</li>
+       </ul>
+    ]]>
+    </change-notes>
+
+    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.properties</depends>
+    <depends>com.intellij.modules.java</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow factoryClass="org.jspresso.i18n.view.JspressoSnapWindowFactory" id="Jspresso" anchor="left"
+                    icon="I18nIcons.I18N_VIEW"/>
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+</idea-plugin>
