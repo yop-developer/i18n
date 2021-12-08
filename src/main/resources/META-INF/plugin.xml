@@ -1,3 +1,18 @@
+<!--
+  ~ I18N
+  ~ Copyright (C) 2021  Maxime HAMM - NIMBLY CONSULTING - maxime.hamm.pro@gmail.com
+  ~
+  ~ This document is free software; you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation; either version 2 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This work is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  -->
+
 <idea-plugin>
     <id>org.jspresso.plugin.i18n</id>
     <name>I18N Translation</name>
@@ -16,14 +31,15 @@
       <i>@author Maxime HAMM</i>
     ]]></description>
 
-    <change-notes><![CDATA[
-       <ul>
-          <li><b>1.2</b> IDEA 2020.3 compatibility</li>
-          <li><b>1.1</b> IDEA 2020.1 compatibility</li>
-          <li><b>1.0</b> Initial version</li>
-       </ul>
-    ]]>
-    </change-notes>
+<!--    <change-notes><![CDATA[-->
+<!--       <ul>-->
+<!--          <li><b>1.3</b> IDEA 2021.3 compatibility</li>-->
+<!--          <li><b>1.2</b> IDEA 2020.3 compatibility</li>-->
+<!--          <li><b>1.1</b> IDEA 2020.1 compatibility</li>-->
+<!--          <li><b>1.0</b> Initial version</li>-->
+<!--       </ul>-->
+<!--    ]]>-->
+<!--    </change-notes>-->
 
     <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
          on how to target different products -->

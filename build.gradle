@@ -5,10 +5,9 @@ plugins {
 }
 
 group 'io.nimbly.i18n'
-version '2.0-SNAPSHOT'
+version '1.3.0'
 
 repositories {
-    mavenCentral()
     mavenCentral()
 }
 
@@ -26,8 +25,13 @@ intellij {
 }
 patchPluginXml {
     changeNotes = """
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>"""
+     <ul>
+       <li><b>1.3</b> IDEA 2021.3 compatibility</li>
+       <li><b>1.2</b> IDEA 2020.3 compatibility</li>
+       <li><b>1.1</b> IDEA 2020.1 compatibility</li>
+       <li><b>1.0</b> Initial version</li>
+    </ul>
+     """
 }
 test {
     useJUnitPlatform()
