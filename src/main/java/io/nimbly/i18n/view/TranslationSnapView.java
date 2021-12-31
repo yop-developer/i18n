@@ -12,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package org.jspresso.i18n.view;
+package io.nimbly.i18n.view;
 
 import com.intellij.ide.ui.laf.IntelliJLaf;
 import com.intellij.lang.properties.IProperty;
@@ -22,6 +22,7 @@ import com.intellij.lang.properties.psi.Property;
 import com.intellij.lang.properties.psi.impl.PropertyKeyImpl;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -32,15 +33,18 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
-import com.intellij.openapi.project.DumbService;
+import com.intellij.openapi.progress.Task.Backgroundable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.util.ThrowableComputable;
 import com.intellij.pom.Navigatable;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.resolve.reference.impl.PsiMultiReference;
 import com.intellij.psi.impl.source.tree.TreeElement;
 import com.intellij.ui.ScrollPaneFactory;
+import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -48,8 +52,10 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.SlowOperations;
 import com.intellij.util.ThrowableRunnable;
 import com.intellij.util.ui.JBUI;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
-import org.jspresso.i18n.util.*;
+import io.nimbly.i18n.util.*;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -82,9 +88,9 @@ public class TranslationSnapView extends AbstractSnapView {
     private JPanel translationWindow;
     private JTextField key;
 
-    private LinkLabel[] flags;
+    private ActionLink[] flags;
     private JTextComponent[] translations;
-    private LinkLabel[] languages;
+    private ActionLink[] languages;
 
     private ComboBox<MyPropertiesFileInfo> resourcesGroup;
     private JButton duplicateButton;
@@ -93,9 +99,6 @@ public class TranslationSnapView extends AbstractSnapView {
     private MyTranslationPaneAdapter[] translationsPaneAdaptors = null;
     private Map<Document, MyPropertiesFileAdapater> propertiesFileAdaptors = new HashMap<>();
 
-    private AnAction leftAction;
-    private AnAction rightAction;
-
     private TranslationModel model = null;
 
     private ToggleAction editAction;
@@ -103,7 +106,7 @@ public class TranslationSnapView extends AbstractSnapView {
 
     /**
      * TranslationSnapView
-     * @param project
+     * @param project The project
      */
     public TranslationSnapView(Project project) {
 
@@ -142,7 +145,7 @@ public class TranslationSnapView extends AbstractSnapView {
                 LOG.error("Translation init error", ee);
             }
         });
-        duplicateButton.setIcon(SJSIcons.DUPLICATE);
+        duplicateButton.setIcon(I18NIcons.DUPLICATE);
         duplicateButton.setFont(duplicateButton.getFont().deriveFont(duplicateButton.getFont().getStyle(), duplicateButton.getFont().getSize() -2));
         duplicateButton.setText("Duplicate key");
 
@@ -385,9 +388,9 @@ public class TranslationSnapView extends AbstractSnapView {
 
                 String lang = moduleLanguages.get(i);
 
-                this.flags[i].setIcon(SJSIcons.getFlag(lang));
+                this.flags[i].setIcon(I18NIcons.getFlag(lang));
 
-                Icon ico = IconUtil.addText(SJSIcons.TRANSPARENT, lang.toUpperCase(), 12f, SwingConstants.CENTER);
+                Icon ico = IconUtil.addText(I18NIcons.TRANSPARENT, lang.toUpperCase(), 12f, SwingConstants.CENTER);
                 this.languages[i].setIcon(ico);
                 this.languages[i].setDisabledIcon(ico);
 
@@ -487,7 +490,7 @@ public class TranslationSnapView extends AbstractSnapView {
         boolean isWritable = translations[0].isEditable();
 
         deleteOrCreateKeyButton.setText(isWritable && atLeasOneTranslations ? DELETE_KEY : CREATE_KEY);
-        deleteOrCreateKeyButton.setIcon(isWritable && atLeasOneTranslations ? SJSIcons.DELETE : SJSIcons.ADD);
+        deleteOrCreateKeyButton.setIcon(isWritable && atLeasOneTranslations ? I18NIcons.DELETE : I18NIcons.ADD);
 
         deleteOrCreateKeyButton.setEnabled(model.getSelectedPropertiesFile().getVirtualFile().isWritable());
 
@@ -690,11 +693,11 @@ public class TranslationSnapView extends AbstractSnapView {
             @Override
             public void update(@NotNull AnActionEvent e) {
                 if  (deleteOrCreateKeyButton.getText().equals(CREATE_KEY)) {
-                    e.getPresentation().setIcon(SJSIcons.FIND);
+                    e.getPresentation().setIcon(I18NIcons.FIND);
                     e.getPresentation().setText("Select another key or create a new key...", false);
                 }
                 else {
-                    e.getPresentation().setIcon(SJSIcons.EDIT);
+                    e.getPresentation().setIcon(I18NIcons.EDIT);
                     e.getPresentation().setText("Rename key...", false);
                 }
             }
@@ -712,36 +715,38 @@ public class TranslationSnapView extends AbstractSnapView {
         DefaultActionGroup group = new DefaultActionGroup();
 
         // left
-        leftAction = new AnAction("Left") {
+        AnAction leftAction = new AnAction("Left") {
             @Override
             public void actionPerformed(AnActionEvent e) {
                 if (model.scrollLeft())
                     loadTranslation(model.getSelectedKey(), null);
             }
+
             @Override
             public void update(AnActionEvent e) {
-                e.getPresentation().setVisible(model.getKeyPath().indexOf('.')>0);
-                e.getPresentation().setEnabled(model.getSelectedKey().length()<model.getKeyPath().length());
+                e.getPresentation().setVisible(model.getKeyPath().indexOf('.') > 0);
+                e.getPresentation().setEnabled(model.getSelectedKey().length() < model.getKeyPath().length());
             }
         };
-        leftAction.getTemplatePresentation().setIcon(SJSIcons.LEFT);
+        leftAction.getTemplatePresentation().setIcon(I18NIcons.LEFT);
         leftAction.getTemplatePresentation().setText("Previous in dot notation", false);
         group.add(leftAction);
 
         // right
-        rightAction = new AnAction("Right") {
+        AnAction rightAction = new AnAction("Right") {
             @Override
             public void actionPerformed(AnActionEvent e) {
                 if (model.scrollRight())
                     loadTranslation(model.getSelectedKey(), null);
             }
+
             @Override
             public void update(AnActionEvent e) {
-                e.getPresentation().setVisible(model.getKeyPath().indexOf('.')>0);
-                e.getPresentation().setEnabled(model.getSelectedKey().indexOf('.')>0);
+                e.getPresentation().setVisible(model.getKeyPath().indexOf('.') > 0);
+                e.getPresentation().setEnabled(model.getSelectedKey().indexOf('.') > 0);
             }
         };
-        rightAction.getTemplatePresentation().setIcon(SJSIcons.RIGHT);
+        rightAction.getTemplatePresentation().setIcon(I18NIcons.RIGHT);
         rightAction.getTemplatePresentation().setText("Next in dot notation", false);
         group.add(rightAction);
 
@@ -781,7 +786,14 @@ public class TranslationSnapView extends AbstractSnapView {
                     // Search for reference
                     Module module = null;
                     String key = null;
-                    PsiReference referenceTarget = findReferenceTarget(editor);
+
+                    PsiReference referenceTarget = null;
+                    try {
+                        referenceTarget = SlowOperations.allowSlowOperations((ThrowableComputable<PsiReference, Throwable>) () ->
+                                findReferenceTarget(editor));
+                    } catch (Throwable e) {
+                        LOG.error("Translation init error", e);
+                    }
 
                     LOG.trace("initTranslation : reference : " + referenceTarget);
                     if (referenceTarget != null) {
@@ -817,8 +829,8 @@ public class TranslationSnapView extends AbstractSnapView {
                             Module finalModule = module;
                             SlowOperations.allowSlowOperations((ThrowableRunnable<Throwable>) () ->
                                     initTranslationKey(finalKey, false, FileUtil.getFile(editor), finalModule));
-                        } catch (Throwable ee) {
-                            LOG.error("Translation init error", ee);
+                        } catch (Throwable e) {
+                            LOG.error("Translation init error", e);
                         }
                     }
                 });
@@ -973,9 +985,9 @@ public class TranslationSnapView extends AbstractSnapView {
 
         
         //---- flag ----
-        flags = new LinkLabel[langs.size()];
+        flags = new ActionLink[langs.size()];
         translations = new JTextComponent[langs.size()];
-        languages = new LinkLabel[langs.size()];
+        languages = new ActionLink[langs.size()];
 
         JPanel translationPanel = new JPanel();
         if (langs.size()>0) {
@@ -983,13 +995,14 @@ public class TranslationSnapView extends AbstractSnapView {
             translationPanel.setLayout(new GridLayoutManager(langs.size(), 3, JBUI.insets(10, 15, 10, 5), -1, -1));
 
             for (int i = 0; i < langs.size(); i++) {
+
                 int finalI = i;
 
-                flags[i] = LinkLabel.create(null, () -> openResourceBundleFile(finalI));
+                flags[i] = new ActionLink("", actionEvent -> { openResourceBundleFile(finalI); });
                 flags[i].setAlignmentY(0.0F);
                 flags[i].setMinimumSize(new Dimension(25, 20));
                 flags[i].setToolTipText("Open properties file...");
-                flags[i].setHoveringIcon(SJSIcons.MOVE_TO);
+                flags[i].setRolloverIcon(I18NIcons.MOVE_TO);
 
                 translationPanel.add(flags[i], new GridConstraints(i, 0, 1, 1,
                         GridConstraints.ANCHOR_NORTHEAST, GridConstraints.FILL_NONE,
@@ -1011,7 +1024,10 @@ public class TranslationSnapView extends AbstractSnapView {
                         null, null, null));
 
                 //---- lang ----
-                languages[i] = LinkLabel.create(null, () -> googleTranslation(finalI));
+                languages[i] = new ActionLink("", actionEvent -> {
+                    googleTranslation(finalI);
+                });
+
                 languages[i].setMinimumSize(new Dimension(30, 20));
                 languages[i].setHorizontalTextPosition(SwingConstants.LEFT);
                 translationPanel.add(languages[i], new GridConstraints(i, 2, 1, 1,
@@ -1020,7 +1036,7 @@ public class TranslationSnapView extends AbstractSnapView {
                         GridConstraints.SIZEPOLICY_FIXED,
                         null, null, null));
                 languages[i].setToolTipText("Google translate...");
-                languages[i].setHoveringIcon(SJSIcons.GOOGLE_TRANSALTE);
+                languages[i].setRolloverIcon(I18NIcons.GOOGLE_TRANSALTE);
             }
         }
 
@@ -1064,72 +1080,62 @@ public class TranslationSnapView extends AbstractSnapView {
         if (! this.translations[index].isEditable())
             return;
 
-        Module module = model.getModule();
-        String sourceLanguage = null;
-        String sourceTranslation = null;
-
-        // get target language
-        String targetLanguage = getLanguage(index);
-
         // try to use best laguage
         String key = this.key.getText();
-        String bestLanguage = I18nUtil.getBestLanguage(module);
-        if (sourceLanguage != null) {
-
-            String translation = I18nUtil.getTranslation(key, bestLanguage, module);
-            if (translation != null) {
-
-                sourceLanguage = bestLanguage;
-                sourceTranslation = translation;
-            }
-        }
-
-        // try using other languages
-        if (sourceLanguage == null) {
-
-            for (IProperty property : I18nUtil.getPsiProperties(key, null, module)) {
-
-                String translation = I18nUtil.unescapeKeepCR(property.getValue());
-                if (translation == null || translation.trim().isEmpty())
-                    continue;
-
-                String lang =  I18nUtil.getLanguage(property.getPropertiesFile());
-                if (lang.equals(targetLanguage))
-                    continue;
-
-                sourceLanguage = lang;
-                sourceTranslation = translation;
-
-                break;
-            }
-        }
-
-        // use the translation key if no best choice
-        if (sourceLanguage == null) {
-
-            sourceLanguage = Locale.ENGLISH.getLanguage();
-            sourceTranslation = I18nUtil.prepareKeyForGoogleTranslation(key);
-        }
-
-        // well no more suggestions !
-        Project project = module.getProject();
-        if (sourceLanguage == null) {
-
-            Messages.showErrorDialog(project, "No source found for translation !", NIMBLY);
-            return;
-        }
-
-        // do translation
-        String finalSourceLanguage = sourceLanguage;
-        String finalSourceTranslation = sourceTranslation;
 
         ProgressManager.getInstance()
-                .run(new Task.Backgroundable(project, "Google translate", true) {
+                .run(new Backgroundable(project, "Google translate", true) {
 
                     private boolean canceled = false;
 
                     @Override
                     public void run(@NotNull ProgressIndicator indicator) {
+
+                        Module module = model.getModule();
+                        String sourceLanguage = null;
+                        String sourceTranslation = null;
+
+                        // get target language
+                        String targetLanguage = getLanguage(index);
+
+                        // try using other languages
+                        List<IProperty> psiProperties = ApplicationManager.getApplication().runReadAction((Computable<List<IProperty>>) () ->
+                                I18nUtil.getPsiProperties(key, null, module));
+
+                        for (IProperty property : psiProperties) {
+
+                            String translation = I18nUtil.unescapeKeepCR(property.getValue());
+                            if (translation == null || translation.trim().isEmpty())
+                                continue;
+
+                            String lang =  I18nUtil.getLanguage(property.getPropertiesFile());
+                            if (Objects.equals(lang, targetLanguage))
+                                continue;
+
+                            sourceLanguage = lang;
+                            sourceTranslation = translation;
+
+                            break;
+                        }
+
+                        // use the translation key if no best choice
+                        if (sourceLanguage == null) {
+
+                            sourceLanguage = Locale.ENGLISH.getLanguage();
+                            sourceTranslation = I18nUtil.prepareKeyForGoogleTranslation(key);
+                        }
+
+                        // well no more suggestions !
+                        Project project = module.getProject();
+                        if (sourceLanguage == null) {
+
+                            Messages.showErrorDialog(project, "No source found for translation !", NIMBLY);
+                            return;
+                        }
+
+                        // do translation
+                        String finalSourceLanguage = sourceLanguage;
+                        String finalSourceTranslation = sourceTranslation;
 
                         String translation;
                         try {
@@ -1166,10 +1172,10 @@ public class TranslationSnapView extends AbstractSnapView {
                         // Do update key
                         PropertiesFile targetFile = I18nUtil.getPsiPropertiesSiblingFile(model.getSelectedPropertiesFile(), targetLanguage, module);
                         if (targetFile!=null) {
-                            ApplicationManager.getApplication().invokeLater(
-                                    () -> I18nUtil.doUpdateTranslation(key, translation, targetFile, true));
+                            I18nUtil.doUpdateTranslation(key, translation, targetFile, true);
+//                            ApplicationManager.getApplication().invokeLater(
+//                                    () -> I18nUtil.doUpdateTranslation(key, translation, targetFile, true));
                         }
-
                      }
 
                     @Override

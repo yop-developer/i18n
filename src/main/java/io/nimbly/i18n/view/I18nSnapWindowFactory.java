@@ -12,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package org.jspresso.i18n.view;
+package io.nimbly.i18n.view;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -22,13 +22,13 @@ import com.intellij.ui.content.ContentFactory;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * JspressoSnapWindowFactory
+ * I18nSnapWindowFactory
  * User: Maxime HAMM
  * Date: 14/01/2017
  *
  * @See QuickDocOnMouseOverManager
  */
-public class JspressoSnapWindowFactory  implements ToolWindowFactory {
+public class I18nSnapWindowFactory implements ToolWindowFactory {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {

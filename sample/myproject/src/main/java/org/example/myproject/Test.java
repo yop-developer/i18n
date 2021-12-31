@@ -12,13 +12,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package icons;
 
-import com.intellij.openapi.util.IconLoader;
+package org.example.myproject;
 
-import javax.swing.*;
+public class Test {
 
-public interface I18nIcons {
-
-    Icon I18N_VIEW = IconLoader.getIcon("/io/nimbly/i18n/icons/cucumber-plus-16x16.png");
+    public static void main(String[] args) {
+        String s1 = "first";
+        String s2 = "second";
+        String bug1 = "toto:";
+    }
 }

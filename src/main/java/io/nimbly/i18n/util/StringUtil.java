@@ -12,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package org.jspresso.i18n.util;
+package io.nimbly.i18n.util;
 
 /**
  * StringUtil

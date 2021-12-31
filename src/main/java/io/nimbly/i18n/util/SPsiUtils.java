@@ -12,30 +12,29 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package org.jspresso.i18n.util;
+package io.nimbly.i18n.util;
 
-import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 
 /**
- * Logger
+ * SPsiUtils
  * User: Maxime HAMM
- * Date: 17/03/2017
+ * Date: 07/06/2016
  */
-public class LoggerFactory {
+public class SPsiUtils {
 
-    public static Logger getInstance(Class clazz) {
-        return getInstance(clazz, null);
-    }
-
-    public static Logger getInstance(Class clazz, String suffix) {
-
-        String canonicalName = clazz.getName();
-        if (canonicalName.startsWith("org.jspresso.i18n"))
-            canonicalName = "i18n.." + clazz.getSimpleName();
-        if (suffix != null) {
-            canonicalName += "." + suffix;
+    /**
+     * Find parent of type
+     */
+    public static <T extends PsiElement> T findSurrounding(PsiElement bean, Class<T> clazz) {
+        PsiElement b = bean.getParent();
+        while (b!=null && ! (b instanceof PsiFile)) {
+            if (clazz.isAssignableFrom(b.getClass())) {
+                return (T)b;
+            }
+            b = b.getParent();
         }
-
-        return Logger.getInstance(canonicalName);
+        return null;
     }
 }

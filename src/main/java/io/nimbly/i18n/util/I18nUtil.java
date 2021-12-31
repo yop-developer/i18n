@@ -12,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package org.jspresso.i18n.util;
+package io.nimbly.i18n.util;
 
 import com.google.common.base.CaseFormat;
 import com.google.gson.JsonArray;
@@ -30,11 +30,13 @@ import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiPackage;
 import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.util.net.HttpConfigurable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -331,7 +333,10 @@ public class I18nUtil {
     public static void doUpdateTranslation(String key, String value, @NotNull PropertiesFile file, boolean runAsWriteAction) {
 
         String escapedValue = I18nUtil.unicodeEscape(value);
-        List<IProperty> properties = file.findPropertiesByKey(key);
+
+        List<IProperty> properties = ApplicationManager.getApplication().runReadAction((Computable<List<IProperty>>) () ->
+                file.findPropertiesByKey(key));
+//        List<IProperty> properties = file.findPropertiesByKey(key);
 
         Runnable runnable = () -> {
             if (!properties.isEmpty()) {
@@ -349,10 +354,12 @@ public class I18nUtil {
             }
         };
 
-        if (runAsWriteAction)
-            executeWriteCommand(file.getProject(), "Update key '" + key + "'", runnable);
-        else
-            runnable.run();
+        ApplicationManager.getApplication().invokeLater(() -> {
+            if (runAsWriteAction)
+                executeWriteCommand(file.getProject(), "Update key '" + key + "'", runnable);
+            else
+                runnable.run();
+        });
     }
 
     private static void insertProperty(PropertiesFile psiFile, String i18nKey, String value) {
@@ -585,15 +592,13 @@ public class I18nUtil {
      */
     @NotNull
     public static List<IProperty> getPsiProperties(@Nullable PropertiesFile propertiesFile, @Nullable String i18nKey, @Nullable String language, Module module) {
-
         List<PropertiesFile> psiFiles;
         if (propertiesFile != null) {
-            psiFiles = Arrays.asList((PropertiesFile) propertiesFile.getContainingFile());
+            psiFiles = List.of((PropertiesFile) propertiesFile.getContainingFile());
         } else {
             psiFiles = getPsiPropertiesFiles(language, module);
         }
         if (psiFiles.isEmpty()) {
-            //Messages.showMessageDialog("Unable to find resource folder !", "Jspresso", Messages.getErrorIcon());
             return Collections.emptyList();
         }
 
@@ -601,8 +606,6 @@ public class I18nUtil {
         for (PropertiesFile pf : psiFiles) {
             if (i18nKey != null) {
                 List<IProperty> propertiesByKey = pf.findPropertiesByKey(i18nKey);
-                if (propertiesByKey == null)
-                    continue;
                 properties.addAll(propertiesByKey);
             } else {
                 properties.addAll(pf.getProperties());
@@ -1010,7 +1013,7 @@ public class I18nUtil {
         return elt4.getAsString();
     }
 
-    private static void executeWriteCommand(Project project, String text, Runnable runnable) {
+    public static void executeWriteCommand(Project project, String text, Runnable runnable) {
 
         CommandProcessor.getInstance().executeCommand(project, () -> {
 
@@ -1020,7 +1023,7 @@ public class I18nUtil {
                         runnable.run();
                     });
                 },
-                text, "Jspresso");
+                text, "I18N+");
     }
 
 }

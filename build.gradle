@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'io.nimbly.i18n'
-version '1.3.0'
+version '1.3.1'
 
 repositories {
     mavenCentral()
@@ -23,6 +23,7 @@ intellij {
     plugins = ['java',
                'com.intellij.properties']
 }
+
 patchPluginXml {
     changeNotes = """
      <ul>
@@ -33,6 +34,7 @@ patchPluginXml {
     </ul>
      """
 }
+
 test {
     useJUnitPlatform()
 }

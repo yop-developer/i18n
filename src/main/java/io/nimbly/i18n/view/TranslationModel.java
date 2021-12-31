@@ -12,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package org.jspresso.i18n.view;
+package io.nimbly.i18n.view;
 
 import com.intellij.lang.properties.IProperty;
 import com.intellij.lang.properties.ResourceBundle;
@@ -21,9 +21,9 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
-import org.jspresso.i18n.util.I18nUtil;
-import org.jspresso.i18n.util.JavaUtil;
-import org.jspresso.i18n.util.LoggerFactory;
+import io.nimbly.i18n.util.I18nUtil;
+import io.nimbly.i18n.util.JavaUtil;
+import io.nimbly.i18n.util.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
