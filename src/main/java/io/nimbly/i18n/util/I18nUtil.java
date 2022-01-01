@@ -36,7 +36,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiPackage;
 import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.util.net.HttpConfigurable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -336,7 +335,6 @@ public class I18nUtil {
 
         List<IProperty> properties = ApplicationManager.getApplication().runReadAction((Computable<List<IProperty>>) () ->
                 file.findPropertiesByKey(key));
-//        List<IProperty> properties = file.findPropertiesByKey(key);
 
         Runnable runnable = () -> {
             if (!properties.isEmpty()) {
@@ -645,7 +643,10 @@ public class I18nUtil {
      * @param propertyFile the property file
      * @return the string
      */
-    public static String doDuplicateTranslationKey(String key, ResourceBundle sourceBundle, ResourceBundle targetBundle, PropertiesFile propertyFile) {
+    public static String doDuplicateTranslationKey(String key,
+           ResourceBundle sourceBundle,
+           ResourceBundle targetBundle,
+           PropertiesFile propertyFile) {
 
         // get target languages
         ResourceBundle resourceBundle = propertyFile.getResourceBundle();
@@ -679,7 +680,7 @@ public class I18nUtil {
                 if (propertiesFile == null)
                     continue;
 
-                doUpdateTranslation(finalKey, translations.get(lang), propertiesFile, false);
+                doUpdateTranslation(finalKey, translations.get(lang), propertiesFile, true);
             }
         });
 
@@ -803,10 +804,9 @@ public class I18nUtil {
      *
      * @param selectedPropertiesFile the selected properties file
      * @param siblingLanguage        the sibling language
-     * @param module                 the module
      * @return the psi properties sibling file
      */
-    public static PropertiesFile getPsiPropertiesSiblingFile(PropertiesFile selectedPropertiesFile, String siblingLanguage, Module module) {
+    public static PropertiesFile getPsiPropertiesSiblingFile(PropertiesFile selectedPropertiesFile, String siblingLanguage) {
 
         for (PropertiesFile f : selectedPropertiesFile.getResourceBundle().getPropertiesFiles()) {
 

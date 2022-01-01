@@ -22,7 +22,6 @@ import com.intellij.lang.properties.psi.Property;
 import com.intellij.lang.properties.psi.impl.PropertyKeyImpl;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -32,7 +31,6 @@ import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.Task.Backgroundable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
@@ -46,14 +44,11 @@ import com.intellij.psi.impl.source.tree.TreeElement;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.SlowOperations;
 import com.intellij.util.ThrowableRunnable;
 import com.intellij.util.ui.JBUI;
-import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
 import io.nimbly.i18n.util.*;
 
@@ -181,6 +176,7 @@ public class TranslationSnapView extends AbstractSnapView {
         ActionGroup editActionGroup = createEditActionGroup();
         editActionToolBar = ActionManager.getInstance().createActionToolbar("EDIT", editActionGroup, true);
         editActionToolBar.setMinimumButtonSize(new Dimension(25, 20));
+        editActionToolBar.setTargetComponent(this);
 
 
         initComponents(Collections.emptyList());
@@ -223,7 +219,7 @@ public class TranslationSnapView extends AbstractSnapView {
 
         String newKey = model.duplicateKey();
 
-        model = new TranslationModel(newKey, model.getOriginFile(), module);
+        model = new TranslationModel(newKey, model.getOriginFile(), model.getSelectedPropertiesFile(), module);
         loadTranslation(newKey, null);
 
         if (editable) {
@@ -300,7 +296,7 @@ public class TranslationSnapView extends AbstractSnapView {
         }
 
         PropertiesFile currentFile = model != null ? model.getSelectedPropertiesFile() : null;
-        model = new TranslationModel(fullI18nKey, originFile, module);
+        model = new TranslationModel(fullI18nKey, originFile, null, module);
         if (model.getSelectedPropertiesFile() == null) {
 
             if (originFile instanceof PropertiesFile) {
@@ -970,6 +966,7 @@ public class TranslationSnapView extends AbstractSnapView {
             ActionGroup prevNextActionGroup = createPreviousNextActionGroup();
             ActionToolbar prevNextActionToolBar = ActionManager.getInstance().createActionToolbar("PN", prevNextActionGroup, true);
             prevNextActionToolBar.setMinimumButtonSize(new Dimension(14, 20));
+            prevNextActionToolBar.setTargetComponent(this);
 
             topPanel.add(prevNextActionToolBar.getComponent(), new GridConstraints(0, 2, 1, 1,
                     GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE,
@@ -978,7 +975,7 @@ public class TranslationSnapView extends AbstractSnapView {
 
             translationWindow.add(topPanel, new GridConstraints(0, 0, 1, 1,
                     GridConstraints.ANCHOR_SOUTHWEST, GridConstraints.FILL_HORIZONTAL,
-                    GridConstraints.SIZEPOLICY_CAN_GROW |  GridConstraints.SIZEPOLICY_CAN_SHRINK, // | GridConstraints.SIZEPOLICY_WANT_GROW,
+                    GridConstraints.SIZEPOLICY_CAN_GROW |  GridConstraints.SIZEPOLICY_CAN_SHRINK,
                     GridConstraints.SIZEPOLICY_FIXED,
                     new Dimension(36, 30), null, null));
         }
@@ -1170,7 +1167,7 @@ public class TranslationSnapView extends AbstractSnapView {
                         }
 
                         // Do update key
-                        PropertiesFile targetFile = I18nUtil.getPsiPropertiesSiblingFile(model.getSelectedPropertiesFile(), targetLanguage, module);
+                        PropertiesFile targetFile = I18nUtil.getPsiPropertiesSiblingFile(model.getSelectedPropertiesFile(), targetLanguage);
                         if (targetFile!=null) {
                             I18nUtil.doUpdateTranslation(key, translation, targetFile, true);
 //                            ApplicationManager.getApplication().invokeLater(

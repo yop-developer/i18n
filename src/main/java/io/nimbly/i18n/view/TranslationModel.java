@@ -48,7 +48,7 @@ public class TranslationModel {
     private boolean viewRefreshBlocked;
     private final PsiFile originFile;
 
-    public TranslationModel(String keyPath, PsiFile originFile, Module module) {
+    public TranslationModel(String keyPath, PsiFile originFile, PropertiesFile selectedPropertiesFile, Module module) {
 
         LOG.debug("TranslationModel instanciation for key '" + keyPath + "'");
         this.module = module;
@@ -65,18 +65,21 @@ public class TranslationModel {
         }
 
         if (originFile instanceof PropertiesFile && originFile.isWritable()) {
-            selectedPropertiesFile = (PropertiesFile) originFile;
+            this.selectedPropertiesFile = (PropertiesFile) originFile;
             defaultLanguage = I18nUtil.getLanguage((PropertiesFile) originFile);
         }
+        else if (selectedPropertiesFile != null) {
+            this.selectedPropertiesFile = selectedPropertiesFile;
+        }
         else {
-            selectedPropertiesFile = I18nUtil.getBestPropertiesFile(keyPath, module);
+            this.selectedPropertiesFile = I18nUtil.getBestPropertiesFile(keyPath, module);
         }
 
         assert defaultLanguage != null;
         selectedLanguage = defaultLanguage.toLowerCase();
         LOG.trace("TranslationModel instanciation for key '" + keyPath + "' - module language selected : '" + defaultLanguage + "'");
 
-        LOG.debug("TranslationModel instanciation for key '" + keyPath + "' - selectedPropertiesFile : '" + selectedPropertiesFile + "'");
+        LOG.debug("TranslationModel instanciation for key '" + keyPath + "' - selectedPropertiesFile : '" + this.selectedPropertiesFile + "'");
     }
 
     public String getKeyPath() {
@@ -104,7 +107,7 @@ public class TranslationModel {
 
     public void updateKey(String language, String translation) {
 
-        PropertiesFile targetFile = I18nUtil.getPsiPropertiesSiblingFile(getSelectedPropertiesFile(), language, module);
+        PropertiesFile targetFile = I18nUtil.getPsiPropertiesSiblingFile(getSelectedPropertiesFile(), language);
         I18nUtil.doUpdateTranslation(selectedKey, translation, targetFile, true);
     }
 
@@ -124,7 +127,7 @@ public class TranslationModel {
         this.selectedLanguage = selectedLanguage;
 
         if (selectedPropertiesFile!=null) {
-            selectedPropertiesFile = I18nUtil.getPsiPropertiesSiblingFile(selectedPropertiesFile, selectedLanguage, module);
+            selectedPropertiesFile = I18nUtil.getPsiPropertiesSiblingFile(selectedPropertiesFile, selectedLanguage);
         }
     }
 
@@ -136,7 +139,7 @@ public class TranslationModel {
         if (selectedPropertiesFile == null)
             return Collections.emptyList();
 
-        PropertiesFile propertiesFile = I18nUtil.getPsiPropertiesSiblingFile(selectedPropertiesFile, language, module);
+        PropertiesFile propertiesFile = I18nUtil.getPsiPropertiesSiblingFile(selectedPropertiesFile, language);
         if (propertiesFile == null)
             return Collections.emptyList();
         return I18nUtil.getPsiProperties(propertiesFile, selectedKey, language, module);
@@ -219,7 +222,7 @@ public class TranslationModel {
 
         PsiDocumentManager.getInstance(module.getProject()).commitAllDocuments();
 
-        selectedPropertiesFile = I18nUtil.getBestPropertiesFile(newKey, module);
+        //selectedPropertiesFile = I18nUtil.getBestPropertiesFile(newKey, module);
 
         return newKey;
     }
