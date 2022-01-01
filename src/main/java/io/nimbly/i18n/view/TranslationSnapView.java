@@ -26,8 +26,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.CaretEvent;
-import com.intellij.openapi.editor.event.DocumentAdapter;
 import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -49,8 +49,8 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.SlowOperations;
 import com.intellij.util.ThrowableRunnable;
 import com.intellij.util.ui.JBUI;
-import org.jetbrains.annotations.NotNull;
 import io.nimbly.i18n.util.*;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -92,7 +92,7 @@ public class TranslationSnapView extends AbstractSnapView {
     private JButton deleteOrCreateKeyButton;
 
     private MyTranslationPaneAdapter[] translationsPaneAdaptors = null;
-    private Map<Document, MyPropertiesFileAdapater> propertiesFileAdaptors = new HashMap<>();
+    private Map<Document, MyPropertiesFileAdapter> propertiesFileAdaptors = new HashMap<>();
 
     private TranslationModel model = null;
 
@@ -363,7 +363,7 @@ public class TranslationSnapView extends AbstractSnapView {
             }
 
             for (Document doc : propertiesFileAdaptors.keySet()) {
-                MyPropertiesFileAdapater listener = propertiesFileAdaptors.get(doc);
+                MyPropertiesFileAdapter listener = propertiesFileAdaptors.get(doc);
                 if (listener!=null)
                     doc.removeDocumentListener(listener);
             }
@@ -451,7 +451,7 @@ public class TranslationSnapView extends AbstractSnapView {
                 Document doc = FileUtil.getDocument(translationProperties[i].getPsiElement());
                 if (doc != null && !propertiesFileAdaptors.containsKey(doc)) {
 
-                    MyPropertiesFileAdapater listener = new MyPropertiesFileAdapater();
+                    MyPropertiesFileAdapter listener = new MyPropertiesFileAdapter();
                     doc.addDocumentListener( listener);
 
                     propertiesFileAdaptors.put(doc, listener);
@@ -1240,9 +1240,9 @@ public class TranslationSnapView extends AbstractSnapView {
 
 
     /*******************************************$
-     *  MyPropertiesFileAdapater
+     *  MyPropertiesFileAdapter
      */
-    private class MyPropertiesFileAdapater extends DocumentAdapter {
+    private class MyPropertiesFileAdapter implements DocumentListener {
 
         private PropertyKeyImpl key = null;
 

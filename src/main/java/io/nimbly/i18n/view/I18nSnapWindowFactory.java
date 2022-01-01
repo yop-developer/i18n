@@ -36,7 +36,7 @@ public class I18nSnapWindowFactory implements ToolWindowFactory {
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
 
         // Translation
-        Content content = contentFactory.createContent(new TranslationSnapView(project), "Fast I18N", false);
+        Content content = contentFactory.createContent(new TranslationSnapView(project), "Translation", false);
         toolWindow.getContentManager().addContent(content);
     }
 

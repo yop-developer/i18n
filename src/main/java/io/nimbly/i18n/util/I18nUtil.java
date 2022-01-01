@@ -982,7 +982,7 @@ public class I18nUtil {
 
     private static String parseResult(String inputJson) {
 
-        JsonElement elt = new JsonParser().parse(inputJson);
+        JsonElement elt = JsonParser.parseString(inputJson);
         if (elt == null || ! elt.isJsonArray())
             return null;
 

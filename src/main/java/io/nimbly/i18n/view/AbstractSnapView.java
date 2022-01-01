@@ -100,7 +100,7 @@ public abstract class AbstractSnapView extends JPanel {
     /*************************************
      * MyCaretListener
      */
-    private class MyCaretListener extends CaretAdapter {
+    private class MyCaretListener implements CaretListener {
         @Override
         public void caretPositionChanged(CaretEvent e) {
             doCaretPositionChanged(e);
@@ -111,7 +111,7 @@ public abstract class AbstractSnapView extends JPanel {
     /*************************************
      * MyDocumentListener
      */
-    private class MyDocumentListener extends DocumentAdapter {
+    private class MyDocumentListener implements DocumentListener {
 
         private Editor editor = null;
 

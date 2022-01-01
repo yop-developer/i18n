@@ -49,7 +49,7 @@
     <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="io.nimbly.i18n.view.I18nSnapWindowFactory" id="Nimbly" anchor="left"
+        <toolWindow factoryClass="io.nimbly.i18n.view.I18nSnapWindowFactory" id="I18N+" anchor="left"
                     icon="I18nIcons.I18N_VIEW"/>
     </extensions>
 

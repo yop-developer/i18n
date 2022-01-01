@@ -76,7 +76,8 @@ public class JavaUtil {
          if (module == null)
             return null;
 
-        return VirtualFileManager.getInstance().findFileByUrl("file://" + module.getModuleFilePath().substring(0, module.getModuleFilePath().lastIndexOf('/')));
+        String path = module.getModuleFilePath();
+        return VirtualFileManager.getInstance().findFileByUrl("file://" + path.substring(0, path.lastIndexOf('/')));
     }
 
     /**

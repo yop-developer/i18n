@@ -31,18 +31,18 @@ public interface I18NIcons {
 
     Logger LOG = LoggerFactory.getInstance(I18NIcons.class);
     
-    Icon GOOGLE_TRANSALTE = IconLoader.getIcon("/io/nimbly/i18n/icons/g_trans.png");
+    Icon GOOGLE_TRANSALTE = IconLoader.getIcon("/io/nimbly/i18n/icons/g_trans.png", I18NIcons.class);
 
-    Icon EDIT = IconLoader.getIcon("/io/nimbly/i18n/icons/edit.png");
-    Icon FIND = IconLoader.getIcon("/io/nimbly/i18n/icons/find.png");
-    Icon DELETE = IconLoader.getIcon("/io/nimbly/i18n/icons/delete.png");
-    Icon ADD = IconLoader.getIcon("/io/nimbly/i18n/icons/add.png");
-    Icon DUPLICATE = IconLoader.getIcon("/io/nimbly/i18n/icons/add.png");
+    Icon EDIT = IconLoader.getIcon("/io/nimbly/i18n/icons/edit.png", I18NIcons.class);
+    Icon FIND = IconLoader.getIcon("/io/nimbly/i18n/icons/find.png", I18NIcons.class);
+    Icon DELETE = IconLoader.getIcon("/io/nimbly/i18n/icons/delete.png", I18NIcons.class);
+    Icon ADD = IconLoader.getIcon("/io/nimbly/i18n/icons/add.png", I18NIcons.class);
+    Icon DUPLICATE = IconLoader.getIcon("/io/nimbly/i18n/icons/add.png", I18NIcons.class);
 
-    Icon LEFT = IconLoader.getIcon("/io/nimbly/i18n/icons/left.png");
-    Icon RIGHT = IconLoader.getIcon("/io/nimbly/i18n/icons/right.png");
-    Icon MOVE_TO = IconLoader.getIcon("/io/nimbly/i18n/icons/move-to-button.png");
-    Icon TRANSPARENT = IconLoader.getIcon("/io/nimbly/i18n/icons/transparent.png");
+    Icon LEFT = IconLoader.getIcon("/io/nimbly/i18n/icons/left.png", I18NIcons.class);
+    Icon RIGHT = IconLoader.getIcon("/io/nimbly/i18n/icons/right.png", I18NIcons.class);
+    Icon MOVE_TO = IconLoader.getIcon("/io/nimbly/i18n/icons/move-to-button.png", I18NIcons.class);
+    Icon TRANSPARENT = IconLoader.getIcon("/io/nimbly/i18n/icons/transparent.png", I18NIcons.class);
 
     Map<String, Icon> FLAGS = new HashMap<>();
 

@@ -20,5 +20,5 @@ import javax.swing.*;
 
 public interface I18nIcons {
 
-    Icon I18N_VIEW = IconLoader.getIcon("/io/nimbly/i18n/icons/cucumber-plus-16x16.png");
+    Icon I18N_VIEW = IconLoader.getIcon("/io/nimbly/i18n/icons/cucumber-plus-16x16.png", I18nIcons.class);
 }
